@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+
+require_relative '../lib/cloudflare'
+
+api_key = ENV['CLOUD_FLARE_API_KEY']
+email = ENV['CLOUD_FLARE_EMAIL']
+
+abort 'Provide API key and email address' unless api_key && email
+
+purge = CloudFlare::PurgeCache.new(api_key, email)
+domain_name = ARGV.shift
+abort 'Please provide a domain name as an argument.' unless domain_name
+p purge.purge_everything(domain_name).body

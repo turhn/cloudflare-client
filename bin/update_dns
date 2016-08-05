@@ -1,0 +1,31 @@
+#!/usr/bin/env ruby
+
+#
+# ./update_dns example.com subdomain 8.8.8.8
+#
+
+require_relative '../lib/cloudflare'
+
+api_key = ENV['CLOUD_FLARE_API_KEY']
+email = ENV['CLOUD_FLARE_EMAIL']
+
+abort 'Provide API key and email address' unless api_key && email
+
+dns = CloudFlare::DNSRecord.new(api_key, email)
+domain_name = ARGV[0]
+dns_name = ARGV[1]
+
+abort 'Please provide a domain name as an argument.' unless domain_name
+dns.load_record(domain_name, dns_name)
+
+require 'net/http'
+
+loop do
+  ip = Net::HTTP.get(URI('https://api.ipify.org'))
+  cfip = dns.ip_address
+  puts "Current ip is #{ip}"
+  puts "Remote ip is #{cfip}"
+
+  p dns.update_ip ip unless cfip == ip
+  sleep 60
+end

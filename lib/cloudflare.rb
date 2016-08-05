@@ -1,0 +1,5 @@
+require_relative 'cloudflare/version'
+require_relative 'cloudflare/api'
+require_relative 'cloudflare/zone'
+require_relative 'cloudflare/purge_cache'
+require_relative 'cloudflare/dns_record'
