@@ -1,32 +1,42 @@
 #!/usr/bin/env ruby
 
 #
-# ./update_dns example.com subdomain 8.8.8.8
+# ./bin/update_dns example.com subdomain
 #
-
-require_relative '../lib/cloudflare'
 
 api_key = ENV['CLOUD_FLARE_API_KEY']
 email = ENV['CLOUD_FLARE_EMAIL']
-interval = ENV['INTERVAL'] || 60
+interval = (ENV['INTERVAL'] || 60).to_i
 
 abort 'Provide API key and email address' unless api_key && email
 
-dns = CloudFlare::DNSRecord.new(api_key, email)
-domain_name = ARGV[0]
-dns_name = ARGV[1]
-
-abort 'Please provide a domain name as an argument.' unless domain_name
-dns.load_record(domain_name, dns_name)
-
 require 'net/http'
+require 'resolv'
+require_relative '../lib/cloudflare'
 
+domain_name = ARGV[0]
+a_name = ARGV[1]
+
+api_called = false # This flag is used to prevent unnecessary API calls.
 loop do
-  ip = Net::HTTP.get(URI('https://api.ipify.org'))
-  cfip = dns.ip_address
-  puts "Current ip is #{ip}"
-  puts "Remote ip is #{cfip}"
+  current_ip = Net::HTTP.get(URI('https://api.ipify.org'))
+  remote_ip = Resolv.getaddress("#{a_name}.#{domain_name}")
 
-  p dns.update_ip ip unless cfip == ip
+  puts "Current ip is #{current_ip}"
+  puts " Remote ip is #{remote_ip}"
+
+  if remote_ip != current_ip
+    unless api_called
+      dns = CloudFlare::DNSRecord.new(api_key, email)
+
+      abort 'Please provide a domain name as an argument.' unless domain_name
+      dns.load_record(domain_name, a_name)
+      p dns.update_ip current_ip
+      api_called = true
+    end
+  else
+    api_called = false
+  end
+
   sleep interval
 end
