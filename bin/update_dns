@@ -8,6 +8,7 @@ require_relative '../lib/cloudflare'
 
 api_key = ENV['CLOUD_FLARE_API_KEY']
 email = ENV['CLOUD_FLARE_EMAIL']
+interval = ENV['INTERVAL'] || 60
 
 abort 'Provide API key and email address' unless api_key && email
 
@@ -27,5 +28,5 @@ loop do
   puts "Remote ip is #{cfip}"
 
   p dns.update_ip ip unless cfip == ip
-  sleep 60
+  sleep interval
 end
