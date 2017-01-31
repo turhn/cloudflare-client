@@ -14,7 +14,7 @@ Set environment variables of :
 
 Compile Container:
 
-`docker build -t cloudflare:latest .`
+`docker build -t cloudflare-client:latest .`
 
 ### Update DNS
 
@@ -29,7 +29,7 @@ In order to update the IP address of `test.example.com`
   -e "CLOUD_FLARE_API_KEY=<API KEY COMES HERE>" \
   -e "CLOUD_FLARE_EMAIL=<EMAIL COMES HERE>" \
   --name cloudflare \
-  cloudflare:latest \
+  cloudflare-client:latest \
   bin/update_dns example.com test
 ```
 
@@ -41,8 +41,8 @@ Purge caches programmatically.
 docker run --rm \
  -e "CLOUD_FLARE_API_KEY=<API KEY COMES HERE>" \
  -e "CLOUD_FLARE_EMAIL=<EMAIL COMES HERE>" \
- --name cloudflare \
- cloudflare:latest \
+ --name cloudflare-client \
+ cloudflare-client:latest \
  bin/purge_cache example.com
 ```
 
@@ -54,15 +54,15 @@ In order to create a dynamic DNS using CloudFlare DNS services use the systemd s
 
 ```ini
 [Unit]
-Description=Docker Application Service
+Description=Dynamic DNS Service
 Requires=docker.service
 After=docker.service
 
 [Service]
 Restart=always
-ExecStart=/usr/bin/docker run --rm -e "CLOUD_FLARE_API_KEY=<API KEY>" -e "CLOUD_FLARE_EMAIL=<EMAIL>" --name cloudflare cloudflare:latest bin/update_dns example.com test
-ExecStop=/usr/bin/docker stop -t 2 cloudflare
-ExecStopPost=/usr/bin/docker rm -f cloudflare
+ExecStart=/usr/bin/docker run --rm -e "CLOUD_FLARE_API_KEY=<API KEY>" -e "CLOUD_FLARE_EMAIL=<EMAIL>" --name cloudflare-client cloudflare-client:latest bin/update_dns example.com test
+ExecStop=/usr/bin/docker stop -t 2 cloudflare-client
+ExecStopPost=/usr/bin/docker rm -f cloudflare-client
 
 [Install]
 WantedBy=default.target
